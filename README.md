@@ -29,11 +29,11 @@ php -S 127.0.0.1:8002
 
 ## Bedienung
 
-Die linke Seite zeigt alle PDF-Dateien aus `PDF_New` und seinen Unterordnern. Nach Auswahl einer Datei erscheint rechts die PDF-Vorschau.
+Die linke Seite zeigt alle PDF-Dateien aus `PDF_New` und seinen Unterordnern. Nach Auswahl einer Datei erscheint rechts die PDF-Vorschau. Über die Checkbox vor dem Dateinamen lassen sich mehrere Dateien für gemeinsame Aktionen auswählen.
 
 ### Belegnummern
 
-Der Button **Belegnummern** versieht alle noch nicht nummerierten PDF-Dateien mit einer Belegnummer. Sie besteht aus dem aktuellen Datum und einer zweistelligen laufenden Nummer:
+Der Button **Belegnummer vergeben** versieht alle ausgewählten, noch nicht nummerierten PDF-Dateien mit einer Belegnummer. Sie besteht aus dem aktuellen Datum und einer zweistelligen laufenden Nummer:
 
 ```text
 YYYYMMDDNN-Dateiname.pdf
@@ -45,11 +45,11 @@ Beispiel:
 2026080801-Rechnung.pdf
 ```
 
-Pro Tag sind die laufenden Nummern `01` bis `99` möglich. Bereits nummerierte Dateien bleiben unverändert.
+Pro Tag sind die laufenden Nummern `01` bis `99` möglich. Bereits vergebene Nummern in `PDF_New` und im passenden Jahresordner von `PDF_Archive` werden berücksichtigt. Im Archiv werden dafür nur PDF-Dateien berücksichtigt, deren Dateiname mit dem heutigen Datum im Format `YYYYMMDD` beginnt. Bereits nummerierte Dateien bleiben unverändert.
 
 ### Archivieren
 
-Der Button **Archivieren** wird nur aktiviert, wenn die ausgewählte Datei eine Belegnummer besitzt. Die PDF-Datei wird anhand der ersten vier Stellen der Belegnummer in einen Jahresordner verschoben:
+Der Button **Archivieren** wird aktiviert, sobald mindestens eine ausgewählte Datei eine Belegnummer besitzt. Nummerierte ausgewählte Dateien werden anhand der ersten vier Stellen der Belegnummer in einen Jahresordner verschoben:
 
 ```text
 ../PDF_Archive/YYYY/
@@ -66,7 +66,7 @@ Der Zielordner wird bei Bedarf automatisch angelegt. Existiert dort bereits eine
 
 ### Entfernen
 
-Der Button **Entfernen** benennt die ausgewählte PDF-Datei nach einer Sicherheitsabfrage um. Dabei wird die Endung `.deleted` angehängt:
+Der Button **Entfernen** benennt alle ausgewählten PDF-Dateien nach einer Sicherheitsabfrage um. Dabei wird die Endung `.deleted` angehängt:
 
 ```text
 Rechnung.pdf -> Rechnung.pdf.deleted
