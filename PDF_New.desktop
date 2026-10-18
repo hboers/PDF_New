@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=PDF New
+Comment=Starte PDF New im Browser
+Path=~/Sync/SynologyDrive/PDF_New
+Exec=./serv.sh
+Terminal=false
+Icon=application-pdf
+Categories=Utility;

@@ -1,86 +1,92 @@
-# PDF New Web Interface
+# PDF_New
 
-Kleine lokale Weboberfläche zum Sichten, Nummerieren, Archivieren und Entfernen von PDF-Dateien im Ordner `PDF_New`.
+Eine kleine, lokal laufende PHP-Webanwendung zum Sichten und Verwalten eines PDF-Eingangsordners. PDF_New zeigt eine Dateiliste mit Vorschau und unterstützt Belegnummern, Archivierung und das reversible Entfernen von Dateien.
+
+## Funktionen
+
+- PDFs im Projektordner und seinen Unterordnern auflisten und im Browser ansehen
+- Mehrere Dateien auswählen und gemeinsam bearbeiten
+- Ausgewählten PDFs eine Belegnummer im Format `YYYYMMDDNN-Dateiname.pdf` geben
+- Belegnummern des aktuellen Tages mit den Dateien im Eingangsordner und im passenden Archiv-Jahresordner abgleichen
+- Nummerierte PDFs nach `../PDF_Archive/YYYY/` verschieben
+- Dateien durch Anhängen von `.deleted` aus der Liste nehmen, ohne sie direkt zu löschen
+
+Die Belegnummer dient als stabiler Verweis zwischen einem Eintrag in der Einnahmenüberschussrechnung (EÜR) und dem zugehörigen archivierten Beleg.
 
 ## Voraussetzungen
 
-- PHP mit CLI-Unterstützung
+- PHP 8.0 oder neuer mit CLI-Unterstützung
 - Bash und `curl` für das Startskript
-- LibreWolf, wenn die Oberfläche automatisch im Browser geöffnet werden soll
-- Internetzugriff für das über ein CDN eingebundene Bootstrap-Stylesheet
+- LibreWolf für den automatischen Browserstart über `serv.sh`
+- Internetverbindung zum Laden des Bootstrap-Stylesheets von jsDelivr
 
-## Start
+Alternativ kann die Anwendung mit einem anderen Browser geöffnet werden. Dafür muss PHP separat gestartet und die angezeigte lokale Adresse manuell im Browser geöffnet werden.
+
+## Installation und Start
+
+Lege den Ordner `PDF_New` neben den Ordner `PDF_Archive`. Die Anwendung erwartet diese Struktur:
+
+```text
+projektordner/
+├── PDF_New/
+└── PDF_Archive/   # wird bei Bedarf angelegt
+```
+
+Starte die Anwendung aus `PDF_New`:
 
 ```bash
 ./serv.sh
 ```
 
-Das Skript startet den PHP-Entwicklungsserver unter:
+Das Skript startet den PHP-Entwicklungsserver auf `http://127.0.0.1:8002` und öffnet die Anwendung in einer temporären LibreWolf-Instanz. Beim Beenden des Browserfensters wird auch der Server beendet.
 
-```text
-http://127.0.0.1:8002
-```
-
-Anschließend wird die Seite automatisch in LibreWolf geöffnet. Alternativ kann der Server direkt gestartet werden:
+Ohne `serv.sh` kann der Server direkt gestartet werden:
 
 ```bash
 php -S 127.0.0.1:8002
 ```
 
+Danach `http://127.0.0.1:8002` im Browser öffnen. Der Server muss aus dem Verzeichnis `PDF_New` gestartet werden.
+
+### Desktop-Starter und LibreWolf-Profil
+
+`PDF_New.desktop` ist ein Linux-Desktop-Starter. Er führt `./serv.sh` im Verzeichnis `PDF_New` aus und öffnet so die Anwendung über den lokalen Server in LibreWolf. Du kannst den Starter zum Beispiel im Anwendungsmenü oder auf dem Desktop ablegen.
+
+Das Verzeichnis `librewolf-profile/` enthält die Einstellungen für das separate, temporäre LibreWolf-Profil, das `serv.sh` bei jedem Start erstellt und beim Beenden wieder entfernt. `user.js` stellt die Sprache auf Deutsch, unterdrückt Erststart- und Standardbrowser-Abfragen und aktiviert benutzerdefinierte Stylesheets. `chrome/userChrome.css` blendet Browserleisten, Seitenleiste, Statusanzeige und Suchleiste aus, damit die PDF-Verwaltung wie ein schlichtes Anwendungsfenster wirkt. Das normale LibreWolf-Profil bleibt davon unberührt.
+
 ## Bedienung
 
-Die linke Seite zeigt alle PDF-Dateien aus `PDF_New` und seinen Unterordnern. Nach Auswahl einer Datei erscheint rechts die PDF-Vorschau. Über die Checkbox vor dem Dateinamen lassen sich mehrere Dateien für gemeinsame Aktionen auswählen.
+Links steht die alphabetisch sortierte PDF-Liste, rechts die Vorschau der geöffneten Datei. Über die Checkboxen lassen sich Dateien für gemeinsame Aktionen auswählen.
 
-### Belegnummern
+### Belegnummer vergeben
 
-Der Button **Belegnummer vergeben** versieht alle ausgewählten, noch nicht nummerierten PDF-Dateien mit einer Belegnummer. Sie besteht aus dem aktuellen Datum und einer zweistelligen laufenden Nummer:
+Für ausgewählte, noch nicht nummerierte PDFs vergibt die Anwendung das aktuelle Datum in der Zeitzone `Europe/Berlin` und eine zweistellige laufende Nummer:
 
 ```text
 YYYYMMDDNN-Dateiname.pdf
 ```
 
-Beispiel:
-
-```text
-2026080801-Rechnung.pdf
-```
-
-Pro Tag sind die laufenden Nummern `01` bis `99` möglich. Bereits vergebene Nummern in `PDF_New` und im passenden Jahresordner von `PDF_Archive` werden berücksichtigt. Im Archiv werden dafür nur PDF-Dateien berücksichtigt, deren Dateiname mit dem heutigen Datum im Format `YYYYMMDD` beginnt. Bereits nummerierte Dateien bleiben unverändert.
+Zum Beispiel: `2026080801-Rechnung.pdf`. Pro Tag stehen die Nummern `01` bis `99` zur Verfügung. Bereits belegte Nummern im Eingangsordner und im passenden Jahresordner des Archivs werden übersprungen. Bereits nummerierte Dateien bleiben unverändert.
 
 ### Archivieren
 
-Der Button **Archivieren** wird aktiviert, sobald mindestens eine ausgewählte Datei eine Belegnummer besitzt. Nummerierte ausgewählte Dateien werden anhand der ersten vier Stellen der Belegnummer in einen Jahresordner verschoben:
-
-```text
-../PDF_Archive/YYYY/
-```
-
-Beispiel:
+Ausgewählte PDFs mit Belegnummer werden anhand des Jahres aus der Nummer in den entsprechenden Archivordner verschoben. Der Jahresordner wird bei Bedarf erstellt. Eine gleichnamige Datei im Ziel verhindert das Verschieben und wird nicht überschrieben.
 
 ```text
 PDF_New/2026080801-Rechnung.pdf
-    -> PDF_Archive/2026/2026080801-Rechnung.pdf
+  → PDF_Archive/2026/2026080801-Rechnung.pdf
 ```
-
-Der Zielordner wird bei Bedarf automatisch angelegt. Existiert dort bereits eine gleichnamige Datei, wird sie nicht überschrieben und die Archivierung schlägt fehl.
 
 ### Entfernen
 
-Der Button **Entfernen** benennt alle ausgewählten PDF-Dateien nach einer Sicherheitsabfrage um. Dabei wird die Endung `.deleted` angehängt:
-
-```text
-Rechnung.pdf -> Rechnung.pdf.deleted
-```
-
-Die Datei wird dadurch nicht endgültig gelöscht und erscheint nicht mehr in der PDF-Liste.
+Nach Bestätigung benennt die Anwendung ausgewählte PDFs um, indem sie `.deleted` an den Dateinamen anhängt. So wird die Datei aus der PDF-Liste ausgeblendet, aber nicht endgültig gelöscht. Eine vorhandene Datei mit diesem Zielnamen wird nicht überschrieben.
 
 ## Dateien
 
-```text
-index.php   Weboberfläche und Dateiverarbeitung
-serv.sh     Startet den lokalen Server und öffnet LibreWolf
-```
+- `index.php` – Oberfläche und Verarbeitung der PDF-Dateien
+- `serv.sh` – startet den lokalen PHP-Server und LibreWolf
+- `librewolf-profile/` – Browser-Einstellungen für die temporäre LibreWolf-Instanz
 
-## Hinweis
+## Hinweise
 
-Die Anwendung ist für den lokalen Betrieb vorgesehen. Der PHP-Entwicklungsserver ist ausschließlich an `127.0.0.1` gebunden und daher nicht direkt aus dem Netzwerk erreichbar.
+Die Anwendung ist für den lokalen Betrieb gedacht. Der Server bindet ausschließlich an `127.0.0.1` und ist nicht direkt aus dem Netzwerk erreichbar. Sie verwendet keine Datenbank; Dateiaktionen wirken unmittelbar auf die Dateien im Eingangs- und Archivordner. Vor der Veröffentlichung sollten keine persönlichen Dokumente oder lokalen Konfigurationsdateien im Repository liegen.
