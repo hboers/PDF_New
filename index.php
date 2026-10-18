@@ -1,4 +1,6 @@
 <?php
+// SPDX-License-Identifier: MIT
+
 function findPdfFiles(string $baseDir): array
 {
     $files = [];
